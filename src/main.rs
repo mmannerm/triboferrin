@@ -1,7 +1,7 @@
 use clap::Parser;
 use figment::{
-    providers::{Env, Format, Serialized, Toml},
     Figment,
+    providers::{Env, Format, Serialized, Toml},
 };
 
 use serde::{Deserialize, Serialize};
@@ -17,7 +17,7 @@ struct Args {
     #[serde(skip_serializing_if = "Option::is_none")]
     config: Option<PathBuf>,
 
-    /// Server host    
+    /// Server host
     #[arg(long)]
     #[serde(skip_serializing_if = "Option::is_none")]
     host: Option<String>,
@@ -44,7 +44,6 @@ struct Config {
     log_level: String,
 }
 
-// The default configuration.
 impl Default for Config {
     fn default() -> Self {
         Self {
@@ -55,12 +54,14 @@ impl Default for Config {
     }
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt()
-        //.pretty()
         .compact()
         .with_thread_names(true)
-        .with_max_level(tracing::Level::DEBUG)
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
+        )
         .init();
     let args = Args::parse();
 
@@ -82,7 +83,9 @@ fn main() {
             verbose: args.verbose,
         }));
 
-    let config: Config = figment.extract().expect("Failed to load configuration");
+    let config: Config = figment.extract()?;
 
     tracing::info!("config = {:?}", config);
+
+    Ok(())
 }
