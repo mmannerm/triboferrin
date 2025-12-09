@@ -1,7 +1,7 @@
 use clap::Parser;
 use figment::{
-    Figment,
     providers::{Env, Format, Serialized, Toml},
+    Figment,
 };
 
 use serde::{Deserialize, Serialize};
@@ -56,6 +56,12 @@ impl Default for Config {
 }
 
 fn main() {
+    tracing_subscriber::fmt()
+        //.pretty()
+        .compact()
+        .with_thread_names(true)
+        .with_max_level(tracing::Level::DEBUG)
+        .init();
     let args = Args::parse();
 
     let mut figment = Figment::from(Serialized::defaults(Config::default()));
@@ -78,7 +84,5 @@ fn main() {
 
     let config: Config = figment.extract().expect("Failed to load configuration");
 
-    dbg!(config);
-
-    println!("Hello, world!");
+    tracing::info!("config = {:?}", config);
 }
