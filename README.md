@@ -5,6 +5,9 @@ A Discord Bot for Text-To-Speech built in Rust. Users can type text messages, an
 ## Features
 
 ### Current
+- Discord bot with Serenity framework
+- Voice channel support via Songbird
+- Discord API proxy support (for custom rate limiting or network configurations)
 - Hierarchical configuration system (CLI args, environment variables, TOML files)
 - Structured logging with tracing
 
@@ -23,20 +26,51 @@ The bot can be run in two modes:
    - Configure via environment variables (`TRIBOFERRIN_*` prefix)
    - Or mount a configuration file (`triboferrin-config.toml`)
 
+## Prerequisites
+
+- Rust 1.74+
+- System dependencies (macOS):
+  ```bash
+  brew install cmake opus pkg-config
+  ```
+
 ## Quick Start
 
+1. Create a Discord bot and get your token from the [Discord Developer Portal](https://discord.com/developers/applications)
+
+2. Build and run:
+   ```bash
+   # Build
+   cargo build --release
+
+   # Run with token
+   TRIBOFERRIN_DISCORD_TOKEN=your-bot-token cargo run
+   ```
+
+### Configuration
+
+Configure via environment variables, TOML file, or CLI args:
+
 ```bash
-# Build
-cargo build --release
+# Environment variables
+TRIBOFERRIN_DISCORD_TOKEN=your-bot-token cargo run
+TRIBOFERRIN_DISCORD_API_URL=http://proxy:3000 cargo run  # optional proxy
 
-# Run locally
-cargo run
+# CLI arguments
+cargo run -- --discord-token your-bot-token
+cargo run -- --discord-api-url http://proxy:3000  # optional proxy
 
-# Run with custom configuration
+# TOML configuration (triboferrin-config.toml)
 cargo run -- --config /path/to/config.toml
+```
 
-# Run with environment variables
-TRIBOFERRIN_HOST=0.0.0.0 TRIBOFERRIN_PORT=8080 cargo run
+Example `triboferrin-config.toml`:
+```toml
+discord_token = "your-bot-token"
+discord_api_url = "http://proxy:3000"  # optional
+host = "localhost"
+port = 8080
+log_level = "info"
 ```
 
 ## Logging

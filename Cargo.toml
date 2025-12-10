@@ -7,5 +7,8 @@ edition = "2024"
 clap = { version = "4.5.53", features = ["derive"] }
 figment = { version = "0.10.19", features = [ "env", "toml" ] }
 serde = { version = "1.0.228", features = ["derive"] }
+serenity = { version = "0.12", features = ["client", "gateway", "model", "voice"] }
+songbird = { version = "0.4", features = ["builtin-queue"] }
+tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
