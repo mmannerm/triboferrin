@@ -13,6 +13,27 @@ cargo clippy             # lint
 cargo fmt                # format
 ```
 
+## Container
+
+Multi-arch container using distroless base image. Requires 8GB+ memory for build.
+
+```bash
+# macOS (Apple Container)
+container system start
+container build --memory 8G --tag triboferrin .
+container run triboferrin
+
+# Docker
+docker build -t triboferrin .
+docker run triboferrin
+```
+
+Build for specific platform:
+```bash
+container build --platform linux/amd64 --tag triboferrin:amd64 .
+container build --platform linux/arm64 --tag triboferrin:arm64 .
+```
+
 ## Configuration
 
 Figment-based, precedence (low→high):
