@@ -3,6 +3,7 @@ use figment::{
     Figment,
     providers::{Env, Format, Serialized, Toml},
 };
+use git_version::git_version;
 use serde::{Deserialize, Serialize};
 use serenity::all::GatewayIntents;
 use serenity::client::ClientBuilder;
@@ -12,9 +13,10 @@ use songbird::SerenityInit;
 use std::path::PathBuf;
 
 const CONFIG_FILE_TOML: &str = "triboferrin-config.toml";
+const VERSION: &str = git_version!(fallback = env!("CARGO_PKG_VERSION"));
 
 #[derive(Parser, Debug, Serialize, Deserialize)]
-#[command(author, version, about, long_about = None)]
+#[command(author, version = VERSION, about, long_about = None)]
 struct Args {
     /// Path to configuration file (overrides all default locations)
     #[arg(short, long)]
