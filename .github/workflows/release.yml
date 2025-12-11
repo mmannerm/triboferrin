@@ -83,41 +83,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake pkg-config
-
-      - name: Install cross-compilation dependencies (arm64)
-        if: matrix.arch == 'arm64'
-        run: |
-          sudo apt-get install -y gcc-aarch64-linux-gnu
-          sudo dpkg --add-architecture arm64
-          sudo sed -i 's/^deb /deb [arch=amd64] /' /etc/apt/sources.list
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ $(lsb_release -cs) main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ $(lsb_release -cs)-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-          sudo apt-get update
-          sudo apt-get install -y libopus-dev:arm64
-
-      - name: Install native dependencies (amd64)
-        if: matrix.arch == 'amd64'
-        run: |
-          sudo apt-get install -y libopus-dev
-
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: houseabsolute/actions-rust-cross@v1
         with:
-          targets: ${{ matrix.target }}
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          key: ${{ matrix.target }}
-
-      - name: Build
-        run: cargo build --release --target ${{ matrix.target }}
-        env:
-          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
-          PKG_CONFIG_PATH: ${{ matrix.arch == 'arm64' && '/usr/lib/aarch64-linux-gnu/pkgconfig' || '' }}
-          PKG_CONFIG_ALLOW_CROSS: ${{ matrix.arch == 'arm64' && '1' || '' }}
+          command: build
+          target: ${{ matrix.target }}
+          args: --release
 
       - name: Prepare artifact
         run: |
