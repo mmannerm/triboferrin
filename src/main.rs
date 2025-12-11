@@ -1,78 +1,13 @@
+mod config;
+
 use clap::Parser;
-use figment::{
-    Figment,
-    providers::{Env, Format, Serialized, Toml},
-};
-use git_version::git_version;
-use serde::{Deserialize, Serialize};
 use serenity::all::GatewayIntents;
 use serenity::client::ClientBuilder;
 use serenity::http::HttpBuilder;
 use serenity::prelude::*;
 use songbird::SerenityInit;
-use std::path::PathBuf;
 
-const CONFIG_FILE_TOML: &str = "triboferrin-config.toml";
-const VERSION: &str = git_version!(fallback = env!("CARGO_PKG_VERSION"));
-
-#[derive(Parser, Debug, Serialize, Deserialize)]
-#[command(author, version = VERSION, about, long_about = None)]
-struct Args {
-    /// Path to configuration file (overrides all default locations)
-    #[arg(short, long)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    config: Option<PathBuf>,
-
-    /// Server host
-    #[arg(long)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    host: Option<String>,
-
-    /// Server port
-    #[arg(long)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    port: Option<u16>,
-
-    /// Log level (debug, info, warn, error)
-    #[arg(long)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    log_level: Option<String>,
-
-    /// Enable verbose output
-    #[arg(short, long)]
-    verbose: bool,
-
-    /// Discord bot token
-    #[arg(long)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    discord_token: Option<String>,
-
-    /// Discord API base URL (for proxy support)
-    #[arg(long)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    discord_api_url: Option<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Config {
-    host: String,
-    port: u16,
-    log_level: String,
-    discord_token: String,
-    discord_api_url: Option<String>,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            host: "localhost".to_string(),
-            port: 8080,
-            log_level: "info".to_string(),
-            discord_token: String::new(),
-            discord_api_url: None,
-        }
-    }
-}
+use crate::config::{Args, build_config};
 
 struct Handler;
 
@@ -85,37 +20,15 @@ impl EventHandler for Handler {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args = Args::parse();
+
+    let config = build_config(&args)?;
+
     tracing_subscriber::fmt()
         .compact()
         .with_thread_names(true)
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
-        )
+        .with_env_filter(tracing_subscriber::EnvFilter::new(&config.log_level))
         .init();
-    let args = Args::parse();
-
-    let mut figment = Figment::from(Serialized::defaults(Config::default()));
-
-    if let Some(config_path) = args.config.as_ref() {
-        figment = figment.merge(Toml::file(config_path));
-    } else {
-        figment = figment.merge(Toml::file(CONFIG_FILE_TOML));
-    }
-
-    figment = figment
-        .merge(Env::prefixed("TRIBOFERRIN_"))
-        .merge(Serialized::defaults(Args {
-            config: None,
-            host: args.host,
-            port: args.port,
-            log_level: args.log_level,
-            verbose: args.verbose,
-            discord_token: args.discord_token,
-            discord_api_url: args.discord_api_url,
-        }));
-
-    let config: Config = figment.extract()?;
 
     tracing::info!("config = {:?}", config);
 
