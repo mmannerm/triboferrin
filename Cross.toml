@@ -2,4 +2,11 @@
 pre-build = ["apt-get update && apt-get install -y cmake libopus-dev pkg-config"]
 
 [target.aarch64-unknown-linux-gnu]
-pre-build = ["apt-get update && apt-get install -y cmake libopus-dev pkg-config"]
+pre-build = [
+    "dpkg --add-architecture $CROSS_DEB_ARCH",
+    "apt-get update",
+    "apt-get install --assume-yes cmake pkg-config libopus-dev:$CROSS_DEB_ARCH"
+]
+
+[target.aarch64-unknown-linux-gnu.env]
+passthrough = ["PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig", "PKG_CONFIG_ALLOW_CROSS=1"]
