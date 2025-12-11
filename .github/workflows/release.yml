@@ -44,19 +44,30 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Install cargo-llvm-cov and cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov,cargo-nextest
 
       - name: Clippy
         run: cargo clippy --all-targets
 
-      - name: Test with coverage
-        run: cargo llvm-cov --lcov --output-path lcov.info
+      - name: Test with coverage and JUnit report
+        run: |
+          cargo llvm-cov nextest --lcov --output-path lcov.info
+          cargo nextest run --profile ci
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           files: lcov.info
+          fail_ci_if_error: false
+
+      - name: Upload test results to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: target/nextest/ci/junit.xml
+          report_type: test_results
           fail_ci_if_error: false
 
   # Compute version from git describe
@@ -181,11 +192,15 @@ jobs:
           output-file: false
           skip-commit: true
           skip-on-empty: true
+          skip-version-file: true
+          skip-tag: true
+          git-push: false
 
       - name: Download artifacts
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         uses: actions/download-artifact@v4
         with:
+          pattern: triboferrin-linux-*
           path: artifacts
 
       - name: Create Release
