@@ -1,26 +1,20 @@
-FROM rust:latest AS builder
+FROM debian:bookworm-slim AS libs
 
 RUN apt-get update && apt-get install -y \
-    cmake \
-    libopus-dev \
-    pkg-config \
+    libopus0 \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
-COPY . /app
-
-RUN cargo build --release
-
-# Determine the library path based on architecture and copy to a known location
-RUN mkdir -p /app/libs && \
-    cp /usr/lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH)/libopus.so.0* /app/libs/
+RUN mkdir -p /libs && \
+    cp /usr/lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH)/libopus.so.0* /libs/
 
 ###
 FROM gcr.io/distroless/cc:nonroot
 
+ARG TARGETARCH
+
 WORKDIR /app
-COPY --from=builder /app/target/release/triboferrin /app
-COPY --from=builder /app/libs/ /usr/lib/
+COPY triboferrin-linux-${TARGETARCH} /app/triboferrin
+COPY --from=libs /libs/ /usr/lib/
 
 ENV LD_LIBRARY_PATH=/usr/lib
 

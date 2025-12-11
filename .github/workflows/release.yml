@@ -103,9 +103,15 @@ jobs:
   container:
     name: Build Container
     runs-on: ubuntu-latest
-    needs: [fmt, check, version]
+    needs: [build, version]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: .
+          merge-multiple: true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
