@@ -40,13 +40,22 @@ Figment-based, precedence (low→high):
 1. Defaults in `Config::default()`
 2. `triboferrin-config.toml` (override path with `-c`)
 3. `TRIBOFERRIN_*` env vars
-4. CLI args
+4. `RUST_LOG` env var (for log_level)
+5. CLI args
 
-Parameters: `host` (localhost), `port` (8080), `log_level` (info), `verbose`
+Parameters: `log_level` (info), `discord_token`, `discord_api_url`
 
 ## Logging
 
-Uses `tracing`. Default INFO, override with `RUST_LOG` env var.
+Uses `tracing`. Default INFO, override with `RUST_LOG` env var or `--log-level`.
+
+## Testing
+
+```bash
+cargo test                           # run tests
+cargo llvm-cov --html                # coverage report (requires cargo-llvm-cov)
+cargo install cargo-llvm-cov         # install coverage tool
+```
 
 ## Git Workflow
 
