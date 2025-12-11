@@ -54,6 +54,11 @@ Conventional Commits: `<type>: <description>`
 
 Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`
 
+Enable pre-commit hooks (runs fmt, clippy, test):
+```bash
+git config core.hooksPath .githooks
+```
+
 PR flow:
 ```bash
 git checkout -b feature/<name>

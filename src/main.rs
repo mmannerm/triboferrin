@@ -5,8 +5,8 @@ use figment::{
 };
 use serde::{Deserialize, Serialize};
 use serenity::all::GatewayIntents;
-use serenity::http::HttpBuilder;
 use serenity::client::ClientBuilder;
+use serenity::http::HttpBuilder;
 use serenity::prelude::*;
 use songbird::SerenityInit;
 use std::path::PathBuf;
@@ -118,7 +118,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("config = {:?}", config);
 
     if config.discord_token.is_empty() {
-        return Err("Discord token is required. Set TRIBOFERRIN_DISCORD_TOKEN or use --discord-token".into());
+        return Err(
+            "Discord token is required. Set TRIBOFERRIN_DISCORD_TOKEN or use --discord-token"
+                .into(),
+        );
     }
 
     let intents = GatewayIntents::GUILD_MESSAGES
