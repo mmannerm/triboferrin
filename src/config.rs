@@ -10,7 +10,7 @@ use std::path::PathBuf;
 const CONFIG_FILE_TOML: &str = "triboferrin-config.toml";
 const VERSION: &str = git_version!(fallback = env!("CARGO_PKG_VERSION"));
 
-#[derive(Parser, Debug, Serialize, Deserialize, Default)]
+#[derive(Parser, Serialize, Deserialize, Default)]
 #[command(author, version = VERSION, about, long_about = None)]
 pub struct Args {
     /// Path to configuration file (overrides all default locations)
@@ -34,11 +34,35 @@ pub struct Args {
     pub discord_api_url: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+impl std::fmt::Debug for Args {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Args")
+            .field("config", &self.config)
+            .field("log_level", &self.log_level)
+            .field(
+                "discord_token",
+                &self.discord_token.as_ref().map(|_| "[REDACTED]"),
+            )
+            .field("discord_api_url", &self.discord_api_url)
+            .finish()
+    }
+}
+
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Config {
     pub log_level: String,
     pub discord_token: String,
     pub discord_api_url: Option<String>,
+}
+
+impl std::fmt::Debug for Config {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Config")
+            .field("log_level", &self.log_level)
+            .field("discord_token", &"[REDACTED]")
+            .field("discord_api_url", &self.discord_api_url)
+            .finish()
+    }
 }
 
 impl Default for Config {
@@ -373,5 +397,40 @@ discord_token = "file_token"
         };
         let cloned = config.clone();
         assert_eq!(config, cloned);
+    }
+
+    #[test]
+    fn test_config_debug_redacts_token() {
+        let config = Config {
+            log_level: "info".to_string(),
+            discord_token: "super_secret_token".to_string(),
+            discord_api_url: None,
+        };
+        let debug_output = format!("{:?}", config);
+        assert!(
+            !debug_output.contains("super_secret_token"),
+            "Debug output should not contain the actual token"
+        );
+        assert!(
+            debug_output.contains("[REDACTED]"),
+            "Debug output should show [REDACTED] for the token"
+        );
+    }
+
+    #[test]
+    fn test_args_debug_redacts_token() {
+        let args = Args {
+            discord_token: Some("super_secret_token".to_string()),
+            ..Default::default()
+        };
+        let debug_output = format!("{:?}", args);
+        assert!(
+            !debug_output.contains("super_secret_token"),
+            "Debug output should not contain the actual token"
+        );
+        assert!(
+            debug_output.contains("[REDACTED]"),
+            "Debug output should show [REDACTED] for the token"
+        );
     }
 }

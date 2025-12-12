@@ -34,17 +34,25 @@ The bot can be run in two modes:
   brew install cmake opus pkg-config
   ```
 
+## Discord Bot Setup
+
+1. Go to [Discord Developer Portal](https://discord.com/developers/applications) and click **New Application**
+2. Navigate to **Bot** → **Reset Token** → copy and save the token
+
+   > **Security:** Never share your bot token publicly; it grants full access to your bot. Avoid exposing it in screenshots, issue reports, public channels, or shell history. If accidentally exposed, immediately regenerate it via **Reset Token**.
+
+3. Under **Privileged Gateway Intents**, enable:
+   - **Message Content Intent**
+4. Go to **OAuth2** → **URL Generator**:
+   - Scopes: `bot`
+   - Bot Permissions: `Connect`, `Speak`, `Send Messages`, `Read Message History`
+5. Open the generated URL to invite the bot to your server
+
 ## Quick Start
 
-1. Create a Discord bot and get your token from the [Discord Developer Portal](https://discord.com/developers/applications)
-
-2. Build and run:
+1. Build and run:
    ```bash
-   # Build
-   cargo build --release
-
-   # Run with token
-   TRIBOFERRIN_DISCORD_TOKEN=your-bot-token cargo run
+   TRIBOFERRIN_DISCORD_TOKEN=your-bot-token cargo run --release
    ```
 
 ### Configuration
